@@ -26,11 +26,11 @@
                         销售价：<span class="nowPrice">{{infoList.sell_price}}元</span>
                     </p>
                     <p>
-                        购买数量：6个
+                        购买数量：<number :max="infoList.stock_quantity"  @getCount="getNum"></number>
                     </p>
                     <p>
-                        <mt-button type="primary"size="small">立即购买</mt-button>
-                        <mt-button @click="addCar" type="danger" size="small">加入购物车</mt-button>
+                        <mt-button type="primary" size="small">立即购买</mt-button>
+                        <mt-button  @click="addCar" type="danger" size="small">加入购物车</mt-button>
                     </p>
                 </div>
             </div>
@@ -47,8 +47,8 @@
                 </div>
             </div>
             <div class="mui-card-footer">
-                <mt-button @click="goDetail1(infoList.id)" type="primary"size="large" plain>图文介绍</mt-button>
-                <mt-button @click="goDetail2(infoList.id)" type="danger" size="large" plain>商品评论</mt-button>
+                <mt-button @click="goDetail1(infoList.id)" type="primary" size="large" plain>图文介绍</mt-button>
+                <mt-button @click="goDetail2(infoList.id)"  type="danger" size="large" plain>商品评论</mt-button>
             </div>
         </div>
     </div>
@@ -56,17 +56,21 @@
 
 <script>
     import swiper from '../subcomponents/swiper.vue'
+    import number from '../goods/goodsinfo_number.vue'
     export default {
         name: "goodsInfo",
         components:{
-            swiper
+            swiper,
+            number
         },
         data(){
             return{
                 id:this.$route.params.id,
                 banner:[],
                 infoList:[],
-                flag:false
+                flag:false,
+                count:1,  //定义的数量
+                num:0
             }
         },
         methods:{
@@ -102,36 +106,62 @@
                 this.$router.push({name:'goodsSp',params:{id}})
             },
             addCar(){
-                this.flag=!this.flag
+                this.num++;
+                if (this.num<2){
+                    this.flag=!this.flag
+                }
+
+               // console.log(this.count);
+                //点击添加购物车，把信息保存到store中的数据中 car
+                //每一条数据都是对象 :{id:商品的id，count：商品的数量，price：商品的单价，selected:商品的状态}
+                let goodsList={
+                    id:this.id,
+                    count:this.count,
+                    price:this.infoList.sell_price,
+                    selected:true
+                }
+                this.$store.commit("addToCar",goodsList);
             },
             //设置小球的动画
             beforeEnter(el){
-                el.style.transform='translate(0,0)'
+                if (this.num<2){
+                    el.style.transform='translate(0,0)'
+                }
             },
-            enter(el,done){
-                el.offsetWidth;
+            enter(el){
+                if (this.num<2){
+                    el.offsetWidth;
 
-                //解决因分辨率不同，需要计算坐标值 -->Element.getBoundingClientRect()
-                //获取小球的位置
-                let ball=document.querySelector('.ball').getBoundingClientRect()
-                //获取徽标的位置:关于dom元素和所在的组件没有任何关系
-                let badge=document.querySelector('.mui-badge').getBoundingClientRect()
-                //求差
-                let x=badge.left-ball.left;
-                let y=badge.top-ball.top;
+                    //解决因分辨率不同，需要计算坐标值 -->Element.getBoundingClientRect()
+                    //获取小球的位置
+                    let ball=document.querySelector('.ball').getBoundingClientRect()
+                    //获取徽标的位置:关于dom元素和所在的组件没有任何关系
+                    let badge=document.querySelector('.mui-badge').getBoundingClientRect()
+                    //求差
+                    let x=badge.left-ball.left;
+                    let y=badge.top-ball.top;
 
-                // el.style.transform='translate(90px,350px)'
-                el.style.transform=`translate(${x}px,${y}px)`
-                el.style.transition='all 1s cubic-bezier(.35,-0.39,1,.79)'
-                done();
+                    // el.style.transform='translate(90px,350px)'
+                    el.style.transform=`translate(${x}px,${y}px)`
+                    el.style.transition='all 1s cubic-bezier(.35,-0.39,1,.79)'
+                    //done();
+                }
+
             },
-            afterEnter(){
+            afterEnter(el){
+                el.style.transition='all 0s cubic-bezier(.35,-0.39,1,.79)'
                 this.flag=!this.flag
+                this.num=0
             },
+            getNum(n){
+                n=n||1;
+                this.count=n;
+            }
         },
         created(){
             this.getBanner()
             this.getGoodsInfo()
+            this.getNum()
         }
     }
 </script>

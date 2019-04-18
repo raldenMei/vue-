@@ -1,7 +1,9 @@
 <template>
     <div class="app_container">
 
-        <mt-header fixed title="vue"></mt-header>
+        <mt-header title="vue" fixed>
+            <mt-button v-show="flag" icon="back" slot="left" @click="goBack">返回</mt-button>
+        </mt-header>
 
         <transition>
             <router-view></router-view>
@@ -17,7 +19,7 @@
                 <span class="mui-tab-label">会员</span>
             </router-link>
             <router-link class="mui-tab-item-my" to="/shopcar">
-                <span class="mui-icon mui-icon-extra mui-icon-extra-cart"><span class="mui-badge">9</span></span>
+                <span class="mui-icon mui-icon-extra mui-icon-extra-cart"><span class="mui-badge">{{this.$store.getters.getCount}}</span></span>
 
                 <span class="mui-tab-label">购物车</span>
             </router-link>
@@ -31,7 +33,31 @@
 
 <script>
     export default {
-        name: "app"
+        name: "app",
+        data(){
+          return{
+              flag:true
+          }
+        },
+        methods:{
+            goBack(){
+                this.$router.go(-1)
+            }
+        },
+        created(){
+           this.flag=this.$route.path=='/home'?false:true
+        },
+        //监听路由地址
+        watch:{
+            '$route.path':function (newVal) {
+                if (newVal=='/home'){
+                    //隐藏按钮
+                    this.flag=false
+                }else{
+                    this.flag=true
+                }
+            }
+        }
     }
 </script>
 
